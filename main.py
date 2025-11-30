@@ -2234,4 +2234,4 @@ if __name__ == "__main__":
     # Setup logging
     logging.basicConfig(
         level=logging.INFO,
-        format='%(asct
+        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
