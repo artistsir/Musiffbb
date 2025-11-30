@@ -2235,3 +2235,68 @@ if __name__ == "__main__":
     logging.basicConfig(
         level=logging.INFO,
         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    )
+    logger = logging.getLogger(__name__)
+    
+    # Start Flask server in background thread for Render compatibility
+    flask_thread = threading.Thread(target=run_flask_app, daemon=True)
+    flask_thread.start()
+    logger.info("✅ Flask health check server started on port 5000")
+    
+    logger.info("Loading persisted state from MongoDB...")
+    load_state_from_db()
+    logger.info("State loaded successfully.")
+
+    logger.info("→ Starting PyTgCalls client...")
+    call_py.start()
+    logger.info("PyTgCalls client started.")
+
+    logger.info("→ Starting Telegram bot client (bot.start)...")
+    try:
+        bot.start()
+        logger.info("Telegram bot has started.")
+    except Exception as e:
+        logger.error(f"❌ Failed to start Pyrogram client: {e}")
+        sys.exit(1)
+
+    me = bot.get_me()
+    BOT_NAME = me.first_name or "Frozen Music"
+    BOT_USERNAME = me.username or os.getenv("BOT_USERNAME", "vcmusiclubot")
+    BOT_LINK = f"https://t.me/{BOT_USERNAME}"
+
+    logger.info(f"✅ Bot Name: {BOT_NAME!r}")
+    logger.info(f"✅ Bot Username: {BOT_USERNAME}")
+    logger.info(f"✅ Bot Link: {BOT_LINK}")
+
+    if not assistant.is_connected:
+        logger.info("Assistant not connected; starting assistant client...")
+        assistant.start()
+        logger.info("Assistant client connected.")
+
+    try:
+        assistant_user = assistant.get_me()
+        ASSISTANT_USERNAME = assistant_user.username
+        ASSISTANT_CHAT_ID = assistant_user.id
+        logger.info(f"✨ Assistant Username: {ASSISTANT_USERNAME}")
+        logger.info(f"💕 Assistant Chat ID: {ASSISTANT_CHAT_ID}")
+
+        asyncio.get_event_loop().run_until_complete(precheck_channels(assistant))
+        logger.info("✅ Assistant precheck completed.")
+
+    except Exception as e:
+        logger.error(f"❌ Failed to fetch assistant info: {e}")
+
+    # Start the heartbeat task
+    logger.info("→ Starting heartbeat task (auto-restart every 2.5 hours)")
+    asyncio.get_event_loop().create_task(heartbeat())
+
+    logger.info("→ Entering idle() (long-polling)")
+    idle()  # keep the bot alive
+
+    try:
+        bot.stop()
+        logger.info("Bot stopped.")
+    except Exception as e:
+        logger.warning(f"Bot stop failed or already stopped: {e}")
+
+    logger.info("✅ All services are up and running. Bot started successfully.")
